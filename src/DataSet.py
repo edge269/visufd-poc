@@ -61,8 +61,9 @@ class DataSet:
             raise ValueError(f"No data found in file: {self.filepath}")
         except Exception as e:
             raise ValueError(f"Failed to load data from {self.filepath}: {e}")
-        # Validate pairing dictionary against DataFrame
-        self._validate_pairing(df)
+        # Validate pairing dictionary only if provided
+        if self.pairing_dictionary:
+            self._validate_pairing(df)
         # Store loaded DataFrame and mapping
         self.df = df
         return self.df
