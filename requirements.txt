@@ -1,0 +1,6 @@
+# Core dependencies
+pandas
+numpy
+
+# Dev dependencies
+pytest

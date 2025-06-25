@@ -27,7 +27,7 @@ Use the `DataSet` class to load data into a pandas DataFrame:
 
 ```python
 from pathlib import Path
-from src.data_set import DataSet
+from src.DataSet import DataSet
 
 # Initialize DataSet with path to CSV file
 dataset = DataSet(Path('data/grid_random.csv'))
