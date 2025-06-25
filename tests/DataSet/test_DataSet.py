@@ -79,3 +79,52 @@ def test_unsupported_type_data(tmp_path):
     with pytest.raises(ValueError) as excinfo:
         ds.load()
     assert "Unsupported type_data" in str(excinfo.value)
+
+
+def test_pairing_dictionary_valid(tmp_path):
+    # Prepare simple CSV
+    content = """pos,val,face1\nP1,5,0.1"""
+    csv = tmp_path / "pair.csv"
+    write_csv(csv, content)
+    pairing = {'pos': 'position', 'val': 'cell', 'face1': 'face'}
+    ds = DataSet(csv, pairing_dictionary=pairing)
+    df = ds.load()
+    # mapping stored and valid
+    assert ds.pairing_dictionary == pairing
+    # DataFrame still loads
+    assert df.shape == (1, 3)
+
+
+@pytest.mark.parametrize("mapping,err_type", [
+    ({'missing': 'cell'}, KeyError),
+    ({'pos': 'invalid'}, ValueError),
+])
+def test_pairing_dictionary_invalid(tmp_path, mapping, err_type):
+    content = """pos,val\nP1,5"""
+    csv = tmp_path / "pair2.csv"
+    write_csv(csv, content)
+    ds = DataSet(csv, pairing_dictionary=mapping)
+    with pytest.raises(err_type):
+        ds.load()
+    
+def test_pairing_no_position(tmp_path):
+    content = """pos,val,face1\nP1,5,0.1"""
+    csv = tmp_path / "nopos.csv"
+    write_csv(csv, content)
+    # mapping missing any position subtype
+    mapping = {'val': 'cell', 'face1': 'face'}
+    ds = DataSet(csv, pairing_dictionary=mapping)
+    with pytest.raises(ValueError) as excinfo:
+        ds.load()
+    assert "exactly one column mapped to 'position'" in str(excinfo.value)
+
+def test_pairing_multiple_positions(tmp_path):
+    content = """p1,p2,val\nX,Y,1"""
+    csv = tmp_path / "multipos.csv"
+    write_csv(csv, content)
+    # mapping with two position subtypes
+    mapping = {'p1': 'position', 'p2': 'position', 'val': 'cell'}
+    ds = DataSet(csv, pairing_dictionary=mapping)
+    with pytest.raises(ValueError) as excinfo:
+        ds.load()
+    assert "exactly one column mapped to 'position'" in str(excinfo.value)
